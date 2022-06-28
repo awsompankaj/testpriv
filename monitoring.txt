@@ -1,0 +1,104 @@
+
+1)	Cluster Events
+CMD: $ oc get events –all-namespaces
+Expected Output:
+
+Where – registry claim event is known.
+Delivery zookeepr event is known from developer project
+Heapster cronjob events may also come which are also known.
+Any ther event can be notified to admins for possible preventive actions. 
+2)	Node Status
+CMD: $ oc get node 
+Expected Output:
+
+Where-
+Status column for all node must be in Ready state
+Any other state if found must be report to admins for any preventive action 
+3)	app-storage project pod status
+CMD: $ oc get pods –n app-storage
+Expected Output:
+
+
+Where-
+ Every POD status must be in ready 1/1 state any other e.g.  0/1 state or status other than Running ( crashloopbackoff, etc. ) must be notified to admins for any preventive action.
+4)	gluster brick multipath status
+CMD: $
+# oc project app-storage
+# oc rsh glusterfs-storage-p9s8k gluster v status
+
+Where – 
+Status of all gluster volumes should be online for all volumes.
+Or you can use to shorten the output
+CMD $: oc rsh glusterfs-storage-2tsg4 gluster v status | grep N | grep -v Daemon
+Expected output:
+
+There should be no output from above command in case of any discrepancy reach out admins to check.
+
+5)	gluster snapshot status
+CMD: $ oc rsh glusterfs-storage-2tsg4 gluster snapshot list
+Expected Output:
+
+ Where: 
+Snapshot should not be present from above output in case any snapshot found report this to admins.
+
+6)	gluster cluster health status using heketi
+
+CMD $: 
+# cd /root/
+# source heketi_pre
+# heketi-cli topology info | grep -e 'State\|Hostname'
+Expected Output:
+
+
+Where:
+Gluster health state should be online for hosts and disks in case of output other than above snap report it to admins.
+
+7)	pvc status cluster wide
+CMD $: oc get pvc --all-namespaces | grep -v Bound
+Expected output
+
+
+Where:
+Above output will show any unbound pv claims, this should be empty in case you found any report it to admins.
+
+8)	Pv status
+CMD $: oc get pv | grep -v Bound
+Expected output:
+
+
+Where:
+Above output will show any unbound pv , this should be empty in case you found any report it to admins.
+9)	Cluster wide pod status
+CMD $: oc get pods --all-namespaces | grep -v Running
+Expected output
+
+Where:
+Any pods which in not running will show from above output in case you found any admins should be notified.
+PS: “logging-curator-1574825400-l2fm8” pod used for Elastic search maintenance and runs according to cron job configured. This pod can be running or in completed state.
+10)	 Node resource utilization status
+CMD $: oc adm top node
+Expected output:
+
+
+Where:
+Above output shows the top memory and cpu utilization of  nodes and sorted order from high to low
+
+11)	Production project ( webprod ) quota and limit ranges
+CMD $: oc describe limitrange limits -n webprod
+Expected output
+
+CMD $: oc describe quota quota -n webprod
+Expected output
+
+
+Where:
+About output shows the limits and quota utilization of project webprod
+
+12)	Check if any CSR is pending 
+CMD $: oc get csr | grep -i pending
+
+Expected output.		
+
+Where:
+Above output shows any pending CSR, which need to be approved manually to prevent certificate expiration, in case you find any admins should be notified.
+
